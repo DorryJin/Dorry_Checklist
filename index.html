@@ -130,7 +130,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 .check-ring.done{background:var(--accent);border-color:var(--accent);}
 .check-ring svg{opacity:0;transform:scale(.4);transition:all .2s;}
 .check-ring.done svg{opacity:1;transform:scale(1);}
-.item-text{flex:1;font-size:13px;line-height:1.4;min-width:0;word-break:keep-all;}
+.item-text{flex:1;font-size:13px;line-height:1.4;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;word-break:keep-all;}
 .item-text.done{text-decoration:line-through;color:var(--text3);}
 
 /* TAG - 줄바꿈 없게 flex-shrink:0 + max-width 제한 */
