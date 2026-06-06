@@ -365,12 +365,14 @@ let saveTimer = null;
 let isLoaded = false;
 let isSaving = false;
 
-// 태그 정의 (최대 5개 커스텀 + 미분류 = 6개)
-let tagDefs = [
+// 기본 태그 (default 목록에만 적용)
+const DEFAULT_TAG_DEFS = [
   {id:'buy', label:'🛒 새로구매'},
   {id:'home', label:'🏠 집꺼'},
   {id:'both', label:'🔄 둘다필요'}
 ];
+
+let tagDefs = [];
 let tagDefsRef = null;
 
 function saveTagDefs() {
@@ -396,11 +398,14 @@ function renderTagFilterBar() {
 }
 
 function addTagDef() {
-  if (tagDefs.length >= 5) { alert('태그는 최대 5개까지 추가할 수 있어요!'); return; }
-  const name = prompt('새 태그 이름 입력 (이모지 포함 5글자 이내)');
+  const maxTags = 5;
+  if (tagDefs.length >= maxTags) { alert(`태그는 최대 ${maxTags}개까지 추가할 수 있어요!`); return; }
+  const name = prompt('새 태그 이름 (5글자 이내, 이모지 포함 가능)');
   if (!name || !name.trim()) return;
+  const label = name.trim().substring(0, 6);
+  if (!label) return;
   const id = 'tag_' + Date.now();
-  tagDefs.push({id, label: name.trim().substring(0, 6)});
+  tagDefs = [...tagDefs, {id, label}];
   saveTagDefs();
   renderTagFilterBar();
 }
@@ -538,8 +543,12 @@ function switchList(id) {
     // tagDefs 로드
     tagDefsRef.once('value', snap => {
       const val = snap.val();
-      if (val && Array.isArray(val) && val.length > 0) tagDefs = val;
-      else tagDefs = [{id:'buy',label:'🛒 새로구매'},{id:'home',label:'🏠 집꺼'},{id:'both',label:'🔄 둘다필요'}];
+      if (val && Array.isArray(val) && val.length > 0) {
+        tagDefs = val.filter(t => t && t.id && t.label);
+      } else {
+        tagDefs = id === 'default' ? [...DEFAULT_TAG_DEFS] : [];
+        if (id === 'default') tagDefsRef.set(tagDefs);
+      }
       renderTagFilterBar();
     });
     dataRef.on('value', onDataValue, err => {
