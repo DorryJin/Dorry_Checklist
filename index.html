@@ -37,11 +37,22 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#555;display:inline-block;margin-left:6px;vertical-align:middle;transition:background .3s;}
 .sync-dot.ok{background:var(--accent2);}
 .sync-dot.err{background:var(--danger);}
-.tab-row{display:flex;gap:5px;align-items:center;}
-.tab{flex:1;padding:7px 0;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.tab-row{display:flex;gap:4px;align-items:center;}
+.tab{padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;}
 .tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-.tab-icon-btn{flex-shrink:0;width:32px;height:32px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all .2s;}
+.tab-spacer{flex:1;}
+.tab-icon-btn{flex-shrink:0;width:28px;height:28px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all .2s;}
 .tab-icon-btn:active,.tab-icon-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* TAG FILTER */
+.tag-filter-bar{display:flex;gap:4px;padding:6px 16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;}
+.tag-filter-bar::-webkit-scrollbar{display:none;}
+.tag-filter-btn{flex-shrink:0;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);font-family:inherit;font-size:11px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis;}
+.tag-filter-btn.active{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent);}
+.tag-add-btn{flex-shrink:0;width:22px;height:22px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;line-height:1;}
+.tag-add-btn:active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tag-filter-btn.del-mode{padding-right:5px;}
+.tag-del-x{font-size:9px;color:var(--danger);margin-left:3px;vertical-align:middle;}
 
 /* LIST SELECTOR */
 .list-selector-wrap{position:relative;margin-bottom:8px;}
@@ -199,11 +210,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
     <button class="tab active" onclick="setTab('all')">전체</button>
     <button class="tab" onclick="setTab('todo')">미완료</button>
     <button class="tab" onclick="setTab('done')">완료</button>
+    <div class="tab-spacer"></div>
     <button class="tab-icon-btn" onclick="toggleSearch()" id="searchToggleBtn" title="검색">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
     <button class="tab-icon-btn" onclick="event.stopPropagation();openModalWithEdit()" title="카테고리 추가">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
   </div>
 </div>
@@ -216,13 +228,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
   </div>
 </div>
 
-<div class="tag-filter-bar">
-  <button class="tag-filter-btn active" onclick="setTagFilter('all',this)">전체</button>
-  <button class="tag-filter-btn" onclick="setTagFilter('buy',this)">🛒 새로구매</button>
-  <button class="tag-filter-btn" onclick="setTagFilter('home',this)">🏠 집꺼</button>
-  <button class="tag-filter-btn" onclick="setTagFilter('both',this)">🔄 둘다필요</button>
-  <button class="tag-filter-btn" onclick="setTagFilter('none',this)">미분류</button>
-</div>
+<div class="tag-filter-bar" id="tagFilterBar"></div>
 
 <div class="progress-wrap">
   <div class="progress-info">
@@ -359,6 +365,53 @@ let saveTimer = null;
 let isLoaded = false;
 let isSaving = false;
 
+// 태그 정의 (최대 5개 커스텀 + 미분류 = 6개)
+let tagDefs = [
+  {id:'buy', label:'🛒 새로구매'},
+  {id:'home', label:'🏠 집꺼'},
+  {id:'both', label:'🔄 둘다필요'}
+];
+let tagDefsRef = null;
+
+function saveTagDefs() {
+  if (firebaseOk && tagDefsRef) tagDefsRef.set(tagDefs);
+  else localStorage.setItem('mv_tagdefs_'+currentListId, JSON.stringify(tagDefs));
+}
+
+function renderTagFilterBar() {
+  const bar = document.getElementById('tagFilterBar');
+  if (!bar) return;
+  const canAdd = tagDefs.length < 5;
+  bar.innerHTML = `
+    <button class="tag-filter-btn${currentTagFilter==='all'?' active':''}" onclick="setTagFilter('all',this)">전체</button>
+    ${tagDefs.map(t=>`
+      <button class="tag-filter-btn${currentTagFilter===t.id?' active':''}" onclick="setTagFilter('${t.id}',this)"
+        style="max-width:80px;overflow:hidden;text-overflow:ellipsis;">${t.label.length>5?t.label.substring(0,5)+'…':t.label}</button>
+    `).join('')}
+    <button class="tag-filter-btn${currentTagFilter==='none'?' active':''}" onclick="setTagFilter('none',this)">미분류</button>
+    ${canAdd ? `<button class="tag-add-btn" onclick="addTagDef()">+</button>` : ''}
+  `;
+}
+
+function addTagDef() {
+  if (tagDefs.length >= 5) { alert('태그는 최대 5개까지 추가할 수 있어요!'); return; }
+  const name = prompt('새 태그 이름 입력 (이모지 포함 5글자 이내)');
+  if (!name || !name.trim()) return;
+  const id = 'tag_' + Date.now();
+  tagDefs.push({id, label: name.trim().substring(0, 6)});
+  saveTagDefs();
+  renderTagFilterBar();
+}
+
+function deleteTagDef(id) {
+  if (['buy','home','both'].includes(id)) { alert('기본 태그는 삭제할 수 없어요!'); return; }
+  tagDefs = tagDefs.filter(t => t.id !== id);
+  if (currentTagFilter === id) currentTagFilter = 'all';
+  saveTagDefs();
+  renderTagFilterBar();
+  renderAll();
+}
+
 // ── MULTI-LIST STATE ───────────────────────────────
 let lists = []; // [{id, name}]
 let currentListId = '';
@@ -477,6 +530,14 @@ function switchList(id) {
     dataRef = db.ref(base + '/data');
     checksRef = db.ref(base + '/checks');
     tagsRef = db.ref(base + '/tags');
+    tagDefsRef = db.ref(base + '/tagDefs');
+    // tagDefs 로드
+    tagDefsRef.once('value', snap => {
+      const val = snap.val();
+      if (val && Array.isArray(val) && val.length > 0) tagDefs = val;
+      else tagDefs = [{id:'buy',label:'🛒 새로구매'},{id:'home',label:'🏠 집꺼'},{id:'both',label:'🔄 둘다필요'}];
+      renderTagFilterBar();
+    });
     dataRef.on('value', onDataValue, err => {
       setSyncDot('err');
       isLoaded = true;
@@ -640,8 +701,7 @@ function setTab(t) {
 
 function setTagFilter(t, btn) {
   currentTagFilter = t;
-  document.querySelectorAll('.tag-filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  renderTagFilterBar();
   renderAll();
 }
 
@@ -733,6 +793,7 @@ function renderAll() {
     ? `<div class="no-result" style="padding-top:24px">카테고리를 추가해보세요 👆</div>`
     : `<div class="no-result">항목이 없습니다</div>`);
   updateProgress();
+  renderTagFilterBar();
 }
 
 // ── SECTION TOGGLE ─────────────────────────────────
@@ -767,6 +828,7 @@ function applyEditModeUI() {
   document.getElementById('editFab').style.background = editMode?'rgba(108,99,255,.2)':'';
   document.getElementById('editFab').style.color = editMode?'var(--accent)':'';
   document.getElementById('resetFab').style.display = editMode ? 'flex' : 'none';
+  renderTagFilterBar();
 }
 
 function toggleEdit() {
