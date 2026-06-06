@@ -762,8 +762,8 @@ function toggleEdit() {
   editMode = !editMode;
   applyEditModeUI();
   renderAll();
-  // 두 프레임 후 복원 (렌더링 완전히 끝난 후)
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{ scrollArea.scrollTop = scrollTop; }));
+  // 렌더링 + 레이아웃 완전히 끝난 후 복원
+  setTimeout(()=>{ scrollArea.scrollTop = scrollTop; }, 50);
 }
 
 function renameSection(ci, el) {
