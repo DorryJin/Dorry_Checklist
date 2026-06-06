@@ -849,9 +849,10 @@ function toggleCheck(e, key) {
 function cycleTag(e, key) {
   e.stopPropagation();
   if (!editMode) return;
-  const order = ['none','buy','home','both'];
-  const cur = tags[key]||'none';
-  tags[key] = order[(order.indexOf(cur)+1)%order.length];
+  const order = ['none', ...tagDefs.map(t => t.id)];
+  const cur = tags[key] || 'none';
+  const idx = order.indexOf(cur);
+  tags[key] = order[(idx === -1 ? 0 : idx + 1) % order.length];
   saveTags(); renderAll();
 }
 
