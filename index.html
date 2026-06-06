@@ -396,7 +396,7 @@ function renderTagFilterBar() {
   };
   const canAdd = tagDefs.length < 5;
   bar.innerHTML =
-    (canAdd ? `<button class="tag-filter-btn" onclick="addTagDef()" style="color:var(--accent);border-color:var(--accent);opacity:.7;">🏷️+</button>` : '') +
+    `<button class="tag-filter-btn" onclick="addTagDef()" style="color:var(--accent);border-color:var(--accent);opacity:.7;">🏷️+</button>` +
     `<button class="tag-filter-btn tag-filter-all${currentTagFilter==='all'?' active':''}" onclick="setTagFilter('all',this)">전체</button>` +
     tagDefs.map(t =>
       `<button class="tag-filter-btn${currentTagFilter===t.id?' active':''}"
