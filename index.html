@@ -523,6 +523,7 @@ function switchList(id) {
   if (dataRef) { dataRef.off(); dataRef = null; }
   if (checksRef) { checksRef.off(); checksRef = null; }
   if (tagsRef) { tagsRef.off(); tagsRef = null; }
+  if (tagDefsRef) { tagDefsRef.off(); tagDefsRef = null; }
   currentRef = null;
   currentListId = id;
   isLoaded = false;
@@ -546,12 +547,14 @@ function switchList(id) {
     checksRef = db.ref(base + '/checks');
     tagsRef = db.ref(base + '/tags');
     tagDefsRef = db.ref(base + '/tagDefs');
-    // tagDefs 로드
-    tagDefsRef.once('value', snap => {
+    // tagDefs 실시간 리스너
+    tagDefsRef.on('value', snap => {
       const val = snap.val();
-      if (val && Array.isArray(val) && val.length > 0) {
-        tagDefs = val.filter(t => t && t.id && t.label);
-      } else {
+      if (val) {
+        const arr = Array.isArray(val) ? val : Object.values(val);
+        tagDefs = arr.filter(t => t && t.id && t.label);
+      }
+      if (!tagDefs.length) {
         tagDefs = id === 'default' ? [...DEFAULT_TAG_DEFS] : [];
         if (id === 'default') tagDefsRef.set(tagDefs);
       }
