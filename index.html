@@ -30,22 +30,22 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto S
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:100;background:var(--bg);padding:calc(var(--safe-top) + 8px) 16px 6px;border-bottom:1px solid var(--border);}
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg);padding:calc(var(--safe-top) + 8px) 16px 0;border-bottom:1px solid var(--border);}
 .topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .app-title{font-size:18px;font-weight:700;letter-spacing:-0.5px;}
 .app-title span{color:var(--accent);}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#555;display:inline-block;margin-left:6px;vertical-align:middle;transition:background .3s;}
 .sync-dot.ok{background:var(--accent2);}
 .sync-dot.err{background:var(--danger);}
-.tab-row{display:flex;gap:4px;align-items:center;}
-.tab{padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.tab-row{display:flex;gap:4px;align-items:center;padding-bottom:5px;}
+.tab{padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;}
 .tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 .tab-spacer{flex:1;}
 .tab-icon-btn{flex-shrink:0;width:28px;height:28px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all .2s;}
 .tab-icon-btn:active,.tab-icon-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* TAG FILTER */
-.tag-filter-wrap{padding:4px 0 0;}
+.tag-filter-wrap{padding:4px 0 6px;}
 .tag-filter-bar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;padding:0 16px;}
 .tag-filter-bar::-webkit-scrollbar{display:none;}
 .tag-filter-btn{flex-shrink:0;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);font-family:inherit;font-size:11px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;line-height:1.4;}
@@ -80,12 +80,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 /* ADD SEC INLINE */
 .add-sec-inline{display:none;align-items:center;gap:8px;margin:8px 16px 0;padding:9px 12px;background:var(--bg2);border:1px dashed var(--border2);border-radius:10px;cursor:pointer;font-family:inherit;font-size:13px;color:var(--text2);width:calc(100% - 32px);transition:background .2s;}
 .add-sec-inline.visible{display:flex;}
-
-/* TAG FILTER */
-.tag-filter-bar{display:flex;gap:5px;padding:8px 16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-.tag-filter-bar::-webkit-scrollbar{display:none;}
-.tag-filter-btn{flex-shrink:0;padding:5px 12px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);font-family:inherit;font-size:12px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;}
-.tag-filter-btn.active{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent);}
 
 /* PROGRESS */
 .progress-wrap{padding:6px 16px 0;}
@@ -212,7 +206,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
     <button class="tab-icon-btn" onclick="toggleSearch()" id="searchToggleBtn" title="검색">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
-    <button class="tab-icon-btn" onclick="event.stopPropagation();openModalWithEdit()" title="카테고리 추가" style="width:auto;padding:0 10px;font-size:11px;font-weight:500;background:rgba(96,165,250,.15);color:#60a5fa;border-color:rgba(96,165,250,.3);">
+    <button class="tab-icon-btn" onclick="event.stopPropagation();openModalWithEdit()" title="카테고리 추가" style="width:auto;padding:0 10px;font-size:12px;font-weight:500;background:rgba(96,165,250,.15);color:#60a5fa;border-color:rgba(96,165,250,.3);">
       + 카테고리
     </button>
   </div>
@@ -386,8 +380,13 @@ function renderTagFilterBar() {
   if (!bar) return;
   const truncate = label => {
     const chars = [...label];
-    // 이모지 포함 3글자(이모지+2글자) 초과시 생략
-    return chars.length > 3 ? chars.slice(0,3).join('')+'…' : label;
+    const emoji = /\p{Emoji}/u.test(chars[0]) ? chars[0] : '';
+    if (emoji) {
+      const rest = chars.slice(1).join('').replace(/^\s/,'');
+      return rest.length > 2 ? emoji + rest.substring(0,2) + '…' : label;
+    } else {
+      return chars.length > 3 ? chars.slice(0,3).join('') + '…' : label;
+    }
   };
   const canAdd = tagDefs.length < 5;
   bar.innerHTML =
@@ -664,10 +663,21 @@ function parseData(raw) {
 
 // ── RENDER ─────────────────────────────────────────
 function tagLabel(t) {
-  if (t==='buy') return '🛒 구매';
-  if (t==='home') return '🏠 집꺼';
-  if (t==='both') return '🔄 둘다';
-  return '태그';
+  // tagDefs에서 먼저 찾기
+  const def = tagDefs.find(d => d.id === t);
+  const label = def ? def.label :
+    t==='buy' ? '🛒 새로구매' :
+    t==='home' ? '🏠 집꺼' :
+    t==='both' ? '🔄 둘다필요' : '태그';
+  // 이모지+2글자 or 3글자로 자르기
+  const chars = [...label];
+  const isEmoji = chars.length > 0 && /\p{Emoji}/u.test(chars[0]);
+  if (isEmoji) {
+    const rest = chars.slice(1).join('').replace(/^\s/, '');
+    return chars[0] + rest.substring(0, 2);
+  } else {
+    return label.substring(0, 3);
+  }
 }
 
 function updateProgress() {
