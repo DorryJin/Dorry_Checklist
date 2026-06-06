@@ -45,14 +45,13 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 .tab-icon-btn:active,.tab-icon-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* TAG FILTER */
-.tag-filter-bar{display:flex;gap:4px;padding:6px 16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;}
+.tag-filter-wrap{display:flex;align-items:center;padding:6px 16px 0;gap:6px;min-width:0;}
+.tag-filter-bar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;flex:1;min-width:0;}
 .tag-filter-bar::-webkit-scrollbar{display:none;}
 .tag-filter-btn{flex-shrink:0;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);font-family:inherit;font-size:11px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis;}
 .tag-filter-btn.active{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent);}
-.tag-add-btn{flex-shrink:0;width:22px;height:22px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;line-height:1;}
+.tag-add-btn{flex-shrink:0;min-width:22px;width:22px;height:22px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;line-height:1;}
 .tag-add-btn:active{background:var(--accent);color:#fff;border-color:var(--accent);}
-.tag-filter-btn.del-mode{padding-right:5px;}
-.tag-del-x{font-size:9px;color:var(--danger);margin-left:3px;vertical-align:middle;}
 
 /* LIST SELECTOR */
 .list-selector-wrap{position:relative;margin-bottom:8px;}
@@ -228,7 +227,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
   </div>
 </div>
 
-<div class="tag-filter-bar" id="tagFilterBar"></div>
+<div class="tag-filter-wrap">
+  <div class="tag-filter-bar" id="tagFilterBar"></div>
+  <button class="tag-add-btn" id="tagAddBtn" onclick="addTagDef()" style="display:none;">+</button>
+</div>
 
 <div class="progress-wrap">
   <div class="progress-info">
@@ -382,19 +384,20 @@ function saveTagDefs() {
 
 function renderTagFilterBar() {
   const bar = document.getElementById('tagFilterBar');
+  const addBtn = document.getElementById('tagAddBtn');
   if (!bar) return;
   const canAdd = tagDefs.length < 5;
   bar.innerHTML = `
     <button class="tag-filter-btn${currentTagFilter==='all'?' active':''}" onclick="setTagFilter('all',this)">전체</button>
     ${tagDefs.map(t=>`
-      <button class="tag-filter-btn${currentTagFilter===t.id?' active':''}" 
+      <button class="tag-filter-btn${currentTagFilter===t.id?' active':''}"
         onclick="${editMode ? `deleteTagDef('${t.id}')` : `setTagFilter('${t.id}',this)`}"
-        style="max-width:80px;overflow:hidden;text-overflow:ellipsis;${editMode?'border-color:rgba(255,94,122,.3);':''}"
+        style="${editMode?'border-color:rgba(255,94,122,.3);':''}"
       >${editMode?'✕ ':''}${t.label.length>5?t.label.substring(0,5)+'…':t.label}</button>
     `).join('')}
     <button class="tag-filter-btn${currentTagFilter==='none'?' active':''}" onclick="setTagFilter('none',this)">미분류</button>
-    ${canAdd ? `<button class="tag-add-btn" onclick="addTagDef()">+</button>` : ''}
   `;
+  if (addBtn) addBtn.style.display = canAdd ? 'flex' : 'none';
 }
 
 function addTagDef() {
