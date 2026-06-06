@@ -45,12 +45,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 .tab-icon-btn:active,.tab-icon-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* TAG FILTER */
-.tag-filter-wrap{display:flex;align-items:center;gap:4px;padding:6px 16px 0;}
+.tag-filter-wrap{display:flex;align-items:center;gap:5px;padding:6px 16px 0;overflow:hidden;}
 .tag-filter-bar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;flex:1;min-width:0;}
 .tag-filter-bar::-webkit-scrollbar{display:none;}
 .tag-filter-btn{flex-shrink:0;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);font-family:inherit;font-size:11px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;}
 .tag-filter-btn.active{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent);}
-.tag-filter-all{flex-shrink:0;}
+.tag-filter-all{position:sticky;left:0;z-index:1;background:var(--bg)!important;}
+.tag-add-circle{flex-shrink:0;width:22px;height:22px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+.tag-add-circle:active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* LIST SELECTOR */
 .list-selector-wrap{position:relative;margin-bottom:8px;}
@@ -212,11 +214,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
     <button class="tab-icon-btn" onclick="toggleSearch()" id="searchToggleBtn" title="검색">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
-    <button class="tab-icon-btn" id="tagAddBtn" onclick="addTagDef()" title="태그 추가" style="display:none;">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-    </button>
-    <button class="tab-icon-btn" onclick="event.stopPropagation();openModalWithEdit()" title="카테고리 추가">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <button class="tab-icon-btn" onclick="event.stopPropagation();openModalWithEdit()" title="카테고리 추가" style="width:auto;padding:0 10px;font-size:11px;font-weight:500;">
+      + 카테고리
     </button>
   </div>
 </div>
@@ -230,7 +229,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 </div>
 
 <div class="tag-filter-wrap">
-  <button class="tag-filter-btn tag-filter-all" id="tagFilterAll" onclick="setTagFilter('all',this)">전체</button>
   <div class="tag-filter-bar" id="tagFilterBar"></div>
 </div>
 
@@ -387,20 +385,19 @@ function saveTagDefs() {
 
 function renderTagFilterBar() {
   const bar = document.getElementById('tagFilterBar');
-  const allBtn = document.getElementById('tagFilterAll');
-  const addBtn = document.getElementById('tagAddBtn');
   if (!bar) return;
-  // 전체 버튼 active 상태
-  if (allBtn) allBtn.classList.toggle('active', currentTagFilter === 'all');
-  bar.innerHTML = tagDefs.map(t => {
-    const short = [...t.label].length > 4 ? [...t.label].slice(0,3).join('')+'…' : t.label;
-    return `<button class="tag-filter-btn${currentTagFilter===t.id?' active':''}"
-      onclick="${editMode ? `deleteTagDef('${t.id}')` : `setTagFilter('${t.id}',this)`}"
-      style="${editMode?'border-color:rgba(255,94,122,.3);':''}"
-    >${editMode?'✕ ':''}${short}</button>`;
-  }).join('') +
-  `<button class="tag-filter-btn${currentTagFilter==='none'?' active':''}" onclick="setTagFilter('none',this)">미분류</button>`;
-  if (addBtn) addBtn.style.display = tagDefs.length < 5 ? 'flex' : 'none';
+  const truncate = label => [...label].length > 4 ? [...label].slice(0,3).join('')+'…' : label;
+  const canAdd = tagDefs.length < 5;
+  bar.innerHTML =
+    (canAdd ? `<button class="tag-filter-btn" onclick="addTagDef()" style="color:var(--accent);border-color:var(--accent);opacity:.7;">🏷️+</button>` : '') +
+    `<button class="tag-filter-btn tag-filter-all${currentTagFilter==='all'?' active':''}" onclick="setTagFilter('all',this)">전체</button>` +
+    tagDefs.map(t =>
+      `<button class="tag-filter-btn${currentTagFilter===t.id?' active':''}"
+        onclick="${editMode ? `deleteTagDef('${t.id}')` : `setTagFilter('${t.id}',this)`}"
+        style="${editMode?'border-color:rgba(255,94,122,.3);':''}"
+      >${editMode?'✕ ':''}${truncate(t.label)}</button>`
+    ).join('') +
+    `<button class="tag-filter-btn${currentTagFilter==='none'?' active':''}" onclick="setTagFilter('none',this)">미분류</button>`;
 }
 
 function addTagDef() {
@@ -1061,6 +1058,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+renderTagFilterBar();
 initLists();
 </script>
 </body>
