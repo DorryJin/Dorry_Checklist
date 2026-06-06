@@ -30,8 +30,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto S
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:100;background:var(--bg);padding:calc(var(--safe-top) + 10px) 16px 10px;border-bottom:1px solid var(--border);}
-.topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg);padding:calc(var(--safe-top) + 8px) 16px 6px;border-bottom:1px solid var(--border);}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .app-title{font-size:18px;font-weight:700;letter-spacing:-0.5px;}
 .app-title span{color:var(--accent);}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#555;display:inline-block;margin-left:6px;vertical-align:middle;transition:background .3s;}
@@ -45,14 +45,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 .tab-icon-btn:active,.tab-icon-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* TAG FILTER */
-.tag-filter-wrap{display:flex;align-items:center;gap:5px;padding:6px 16px 0;overflow:hidden;}
-.tag-filter-bar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;flex:1;min-width:0;}
+.tag-filter-wrap{padding:4px 0 0;}
+.tag-filter-bar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;padding:0 16px;}
 .tag-filter-bar::-webkit-scrollbar{display:none;}
-.tag-filter-btn{flex-shrink:0;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);font-family:inherit;font-size:11px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.tag-filter-btn{flex-shrink:0;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);font-family:inherit;font-size:11px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;line-height:1.4;}
 .tag-filter-btn.active{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent);}
-.tag-filter-all{position:sticky;left:0;z-index:1;background:var(--bg)!important;}
-.tag-add-circle{flex-shrink:0;width:22px;height:22px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
-.tag-add-circle:active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tag-filter-all{position:sticky;left:16px;z-index:1;background:var(--bg)!important;}
 
 /* LIST SELECTOR */
 .list-selector-wrap{position:relative;margin-bottom:8px;}
@@ -90,7 +88,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 .tag-filter-btn.active{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent);}
 
 /* PROGRESS */
-.progress-wrap{padding:10px 16px 0;}
+.progress-wrap{padding:6px 16px 0;}
 .progress-info{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:5px;}
 .progress-bar{height:3px;background:var(--bg3);border-radius:4px;overflow:hidden;}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1);}
@@ -214,7 +212,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
     <button class="tab-icon-btn" onclick="toggleSearch()" id="searchToggleBtn" title="검색">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
-    <button class="tab-icon-btn" onclick="event.stopPropagation();openModalWithEdit()" title="카테고리 추가" style="width:auto;padding:0 10px;font-size:11px;font-weight:500;">
+    <button class="tab-icon-btn" onclick="event.stopPropagation();openModalWithEdit()" title="카테고리 추가" style="width:auto;padding:0 10px;font-size:11px;font-weight:500;background:rgba(96,165,250,.15);color:#60a5fa;border-color:rgba(96,165,250,.3);">
       + 카테고리
     </button>
   </div>
@@ -386,7 +384,11 @@ function saveTagDefs() {
 function renderTagFilterBar() {
   const bar = document.getElementById('tagFilterBar');
   if (!bar) return;
-  const truncate = label => [...label].length > 4 ? [...label].slice(0,3).join('')+'…' : label;
+  const truncate = label => {
+    const chars = [...label];
+    // 이모지 포함 3글자(이모지+2글자) 초과시 생략
+    return chars.length > 3 ? chars.slice(0,3).join('')+'…' : label;
+  };
   const canAdd = tagDefs.length < 5;
   bar.innerHTML =
     (canAdd ? `<button class="tag-filter-btn" onclick="addTagDef()" style="color:var(--accent);border-color:var(--accent);opacity:.7;">🏷️+</button>` : '') +
