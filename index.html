@@ -528,6 +528,8 @@ function switchList(id) {
   isLoaded = false;
   listDropdownOpen = false;
   editMode = false;
+  tagDefs = [];
+  renderTagFilterBar();
   document.getElementById('listDropdown').classList.remove('open');
   document.getElementById('lsArr').classList.remove('open');
   document.getElementById('editFabLabel').textContent = '편집';
