@@ -692,7 +692,7 @@ function renderAll() {
       if (!hasFilter || editMode) { catVisible = true; anyVisible = true; }
       const doneCount = cat.subs.reduce((a,s,si2)=>a+s.items.filter((_,i2)=>checks[`${cat.id}-${si2}-${i2}`]).length,0);
       const totalCount = cat.subs.reduce((a,s)=>a+s.items.length,0);
-      const isOpen = (q||editMode) ? true : (localStorage.getItem('open-'+cat.id)==='1');
+      const isOpen = q ? true : (localStorage.getItem('open-'+cat.id)==='1');
       html += `<div class="section${isOpen?' ':'  '}" id="sec-${cat.id}" draggable="${editMode}" 
         ondragstart="onDragStart(event,'${cat.id}')" ondragover="onDragOver(event,'${cat.id}')" 
         ondrop="onDrop(event,'${cat.id}')" ondragend="onDragEnd(event)">
