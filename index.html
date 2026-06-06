@@ -385,8 +385,10 @@ function renderTagFilterBar() {
   bar.innerHTML = `
     <button class="tag-filter-btn${currentTagFilter==='all'?' active':''}" onclick="setTagFilter('all',this)">전체</button>
     ${tagDefs.map(t=>`
-      <button class="tag-filter-btn${currentTagFilter===t.id?' active':''}" onclick="setTagFilter('${t.id}',this)"
-        style="max-width:80px;overflow:hidden;text-overflow:ellipsis;">${t.label.length>5?t.label.substring(0,5)+'…':t.label}</button>
+      <button class="tag-filter-btn${currentTagFilter===t.id?' active':''}" 
+        onclick="${editMode ? `deleteTagDef('${t.id}')` : `setTagFilter('${t.id}',this)`}"
+        style="max-width:80px;overflow:hidden;text-overflow:ellipsis;${editMode?'border-color:rgba(255,94,122,.3);':''}"
+      >${editMode?'✕ ':''}${t.label.length>5?t.label.substring(0,5)+'…':t.label}</button>
     `).join('')}
     <button class="tag-filter-btn${currentTagFilter==='none'?' active':''}" onclick="setTagFilter('none',this)">미분류</button>
     ${canAdd ? `<button class="tag-add-btn" onclick="addTagDef()">+</button>` : ''}
@@ -404,7 +406,9 @@ function addTagDef() {
 }
 
 function deleteTagDef(id) {
-  if (['buy','home','both'].includes(id)) { alert('기본 태그는 삭제할 수 없어요!'); return; }
+  const t = tagDefs.find(x=>x.id===id);
+  if (!t) return;
+  if (!confirm(`"${t.label}" 태그를 삭제할까요?`)) return;
   tagDefs = tagDefs.filter(t => t.id !== id);
   if (currentTagFilter === id) currentTagFilter = 'all';
   saveTagDefs();
