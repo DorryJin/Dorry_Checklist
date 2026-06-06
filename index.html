@@ -565,6 +565,7 @@ function switchList(id) {
         if (id === 'default') tagDefsRef.set(tagDefs);
       }
       renderTagFilterBar();
+      if (isLoaded) renderAll();
     });
     dataRef.on('value', onDataValue, err => {
       setSyncDot('err');
