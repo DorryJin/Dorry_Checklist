@@ -409,7 +409,10 @@ function renderTagFilterBar() {
 
 function addTagDef() {
   const maxTags = 5;
-  if (tagDefs.length >= maxTags) { alert(`태그는 최대 ${maxTags}개까지 추가할 수 있어요!`); return; }
+  if (tagDefs.length >= maxTags) {
+    alert('태그는 최대 5개까지만 추가 가능해요.\n기존 태그를 먼저 삭제해주세요!');
+    return;
+  }
   const name = prompt('새 태그 이름 (5글자 이내, 이모지 포함 가능)');
   if (!name || !name.trim()) return;
   const label = name.trim().substring(0, 6);
