@@ -45,13 +45,11 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 .tab-icon-btn:active,.tab-icon-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* TAG FILTER */
-.tag-filter-wrap{position:relative;padding:6px 44px 0 16px;}
+.tag-filter-wrap{padding:6px 16px 0;}
 .tag-filter-bar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;}
 .tag-filter-bar::-webkit-scrollbar{display:none;}
 .tag-filter-btn{flex-shrink:0;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);font-family:inherit;font-size:11px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis;}
 .tag-filter-btn.active{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent);}
-.tag-add-btn{position:absolute;right:16px;top:6px;width:22px;height:22px;border-radius:99px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;line-height:1;flex-shrink:0;}
-.tag-add-btn:active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* LIST SELECTOR */
 .list-selector-wrap{position:relative;margin-bottom:8px;}
@@ -213,6 +211,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
     <button class="tab-icon-btn" onclick="toggleSearch()" id="searchToggleBtn" title="검색">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
+    <button class="tab-icon-btn" id="tagAddBtn" onclick="addTagDef()" title="태그 추가" style="display:none;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+    </button>
     <button class="tab-icon-btn" onclick="event.stopPropagation();openModalWithEdit()" title="카테고리 추가">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
@@ -229,7 +230,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 
 <div class="tag-filter-wrap">
   <div class="tag-filter-bar" id="tagFilterBar"></div>
-  <button class="tag-add-btn" id="tagAddBtn" onclick="addTagDef()" style="display:none;">+</button>
 </div>
 
 <div class="progress-wrap">
@@ -378,8 +378,9 @@ let tagDefs = [];
 let tagDefsRef = null;
 
 function saveTagDefs() {
-  if (firebaseOk && tagDefsRef) tagDefsRef.set(tagDefs);
-  else localStorage.setItem('mv_tagdefs_'+currentListId, JSON.stringify(tagDefs));
+  const clean = tagDefs.filter(t => t && t.id && t.label);
+  if (firebaseOk && tagDefsRef) tagDefsRef.set(clean);
+  else localStorage.setItem('mv_tagdefs_'+currentListId, JSON.stringify(clean));
 }
 
 function renderTagFilterBar() {
