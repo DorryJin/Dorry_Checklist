@@ -667,10 +667,13 @@ function parseData(raw) {
 function tagLabel(t) {
   // tagDefs에서 먼저 찾기
   const def = tagDefs.find(d => d.id === t);
-  const label = def ? def.label :
+  // default 목록 기본 태그
+  const defaultLabel =
     t==='buy' ? '🛒 새로구매' :
     t==='home' ? '🏠 집꺼' :
-    t==='both' ? '🔄 둘다필요' : '태그';
+    t==='both' ? '🔄 둘다필요' : null;
+  const label = def ? def.label : (currentListId === 'default' ? defaultLabel : null);
+  if (!label) return null; // 태그 숨김
   // 이모지+2글자 or 3글자로 자르기
   const chars = [...label];
   const isEmoji = chars.length > 0 && /\p{Emoji}/u.test(chars[0]);
@@ -763,7 +766,7 @@ function renderAll() {
               <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="1.5,6 4.5,9.5 10.5,2.5"/></svg>
             </div>
             <span class="item-text${done?' done':''}" contenteditable="true" onblur="renameItem(${ci},${si},${ii},this)" onclick="event.stopPropagation()">${item}</span>
-            <span class="item-tag ${tag}" onclick="cycleTag(event,'${key}')">${tagLabel(tag)}</span>
+            ${(()=>{const l=tagLabel(tag);return l?`<span class="item-tag ${tag}" onclick="cycleTag(event,'${key}')">${l}</span>`:''})()}
             <button class="item-del" onclick="deleteItem(${ci},${si},${ii})">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ff5e7a" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
@@ -774,7 +777,7 @@ function renderAll() {
               <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="1.5,6 4.5,9.5 10.5,2.5"/></svg>
             </div>
             <span class="item-text${done?' done':''}">${item}</span>
-            ${tag!=='none'?`<span class="item-tag ${tag}" onclick="cycleTag(event,'${key}')">${tagLabel(tag)}</span>`:''}
+            ${(()=>{const l=tagLabel(tag);return (tag!=='none'&&l)?`<span class="item-tag ${tag}" onclick="cycleTag(event,'${key}')">${l}</span>`:''})()}
           </div>`;
         }
       });
